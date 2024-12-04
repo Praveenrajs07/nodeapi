@@ -798,37 +798,35 @@ const provider = new ethers.JsonRpcProvider(RPC_URL);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 const nftContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet);
 
-// Endpoint for minting NFTs
-app.post("/mint", async (req, res) => {
-  const { to, tokenURL } = req.body;
-  console.log(to, tokenURL,"check");
-
-  if (!to || tokenURL =="") {
-    return res.status(400).send("Missing 'to' or 'tokenURL' in the request body.");
-  }
-
-  try {
-    // Call the smart contract's mint function
-    const tx = await nftContract.safeMint(to, (tokenURL).toString());
-    await tx.wait(); // Wait for the transaction to complete
-
-    res.status(200).send({
-      message: "NFT minted successfully!",
-      transactionHash: tx.hash,
-    });
-  } catch (error) {
-    console.error("Error minting NFT:", error);
-    res.status(500).send({ error: "Failed to mint NFT." });
-  }
-});
-
-// Default route
-app.get("/", (req, res) => res.send("NFT Minting API Ready"));
-
-// Start the server
-app.listen(3010, () => console.log("Server ready on port 3010"));
-
-// app.get("/", (req, res) => res.send("Express on Vercel"));
-
-
-module.exports = app;
+// Endpoint for minting NFTs (using GET method with query parameters)
+app.get("/mint", async (req, res) => {
+	const { to, tokenURL } = req.query; // Retrieve query parameters
+	console.log(to, tokenURL, "check");
+  
+	if (!to || tokenURL =="" ) { // Check for missing parameters
+	  return res.status(400).send("Missing 'to' or 'tokenURL' in the query parameters.");
+	}
+  
+	try {
+	  // Call the smart contract's mint function
+	  const tx = await nftContract.safeMint(to, tokenURL.toString());
+	  await tx.wait(); // Wait for the transaction to complete
+  
+	  res.status(200).send({
+		message: "NFT minted successfully!",
+		transactionHash: tx.hash,
+	  });
+	} catch (error) {
+	  console.error("Error minting NFT:", error);
+	  res.status(500).send({ error: "Failed to mint NFT." });
+	}
+  });
+  
+  // Default route
+  app.get("/", (req, res) => res.send("NFT Minting API Ready"));
+  
+  // Start the server
+  app.listen(3010, () => console.log("Server ready on port 3010"));
+  
+  module.exports = app;
+  
